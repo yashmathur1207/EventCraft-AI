@@ -3,6 +3,38 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script>
+      // Filter out Vite HMR / WebSocket reconnection errors in the AI Studio iframe environment
+      (function() {
+        var prevOnError = window.onerror;
+        window.onerror = function(msg, src, line, col, err) {
+          if ((src && src.indexOf('@vite/client') !== -1) || (msg && String(msg).indexOf('WebSocket') !== -1)) {
+            return true;
+          }
+          if (prevOnError) return prevOnError.apply(this, arguments);
+        };
+        window.addEventListener('error', function(e) {
+          if (
+            (e.filename && e.filename.indexOf('@vite/client') !== -1) ||
+            (e.message && (e.message.indexOf('WebSocket') !== -1 || e.message.indexOf('failed') !== -1)) ||
+            (e.target && e.target.nodeName === 'SCRIPT' && e.target.src && e.target.src.indexOf('@vite/client') !== -1)
+          ) {
+            e.preventDefault();
+            e.stopPropagation();
+            if (e.stopImmediatePropagation) e.stopImmediatePropagation();
+            return true;
+          }
+        }, true);
+        window.addEventListener('unhandledrejection', function(e) {
+          var str = String(e.reason?.stack || e.reason?.message || e.reason || '');
+          if (str.indexOf('@vite/client') !== -1 || str.indexOf('WebSocket') !== -1) {
+            e.preventDefault();
+            e.stopPropagation();
+            if (e.stopImmediatePropagation) e.stopImmediatePropagation();
+          }
+        }, true);
+      })();
+    </script>
     <title>EventCraft AI - Intelligent Celebration & Gathering Planner</title>
     <meta name="description" content="GenAI-powered planning assistant for weddings, birthdays, and community events with dynamic budgets, timelines, vendor management, personalized creative ideas, and real-time collaborative guest coordination." />
     <meta property="og:title" content="EventCraft AI - Intelligent Celebration & Gathering Planner" />
