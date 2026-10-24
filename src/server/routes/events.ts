@@ -36,30 +36,11 @@ export function broadcastToEvent(eventId: string, data: unknown): void {
 // Event CRUD & Coordination Endpoints
 // ----------------------------------------------------
 
-// List all events with summary metrics
+// List all events with full details
 eventsRouter.get('/', (_req: Request, res: Response) => {
   res.json({
     success: true,
-    events: eventsStore.map(evt => ({
-      id: evt.id,
-      title: evt.title,
-      type: evt.type,
-      tagline: evt.tagline,
-      date: evt.date,
-      time: evt.time,
-      location: evt.location,
-      venueName: evt.venueName,
-      targetGuestCount: evt.targetGuestCount,
-      totalBudget: evt.totalBudget,
-      currency: evt.currency,
-      coverImage: evt.coverImage,
-      guestCount: evt.guests.length,
-      attendingCount: evt.guests.filter(g => g.rsvpStatus === 'attending').length,
-      totalSpent: evt.budgetItems.reduce((acc, item) => acc + (item.actualCost || item.estimatedCost), 0),
-      milestoneTotal: evt.milestones.length,
-      milestonesCompleted: evt.milestones.filter(m => m.completed).length,
-      updatedAt: evt.updatedAt
-    }))
+    events: eventsStore
   });
 });
 

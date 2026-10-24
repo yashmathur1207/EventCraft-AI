@@ -1,4 +1,3 @@
-import { jsPDF } from 'jspdf';
 import { PlannerEvent } from '../types/event';
 import { formatCurrency, formatDate } from './formatters';
 
@@ -9,7 +8,9 @@ import { formatCurrency, formatDate } from './formatters';
  * 3. Complete Event Timeline (Strategic Milestones & Day-of Schedule)
  * 4. Vendor Partner Directory (Contacts, Statuses, Financials)
  */
-export function exportEventSummaryPDF(event: PlannerEvent): void {
+export async function exportEventSummaryPDF(event: PlannerEvent): Promise<void> {
+  const { jsPDF } = await import('jspdf');
+
   // Initialize A4 PDF in points (595.28 x 841.89 pt)
   const doc = new jsPDF({
     orientation: 'portrait',

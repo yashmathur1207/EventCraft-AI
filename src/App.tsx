@@ -19,17 +19,26 @@ import { INITIAL_EVENTS } from './data/mockEvents';
 import { Navbar } from './components/Navbar';
 import { EventHero } from './components/EventHero';
 import { OverviewSection } from './components/OverviewSection';
-import { BudgetSection } from './components/BudgetSection';
-import { TimelineSection } from './components/TimelineSection';
-import { VendorSection } from './components/VendorSection';
-import { GuestSection } from './components/GuestSection';
-import { CreativeSection } from './components/CreativeSection';
-import { AIPlannerModal } from './components/AIPlannerModal';
-import { AIBudgetOptimizerModal } from './components/AIBudgetOptimizerModal';
-import { AIVendorRFPModal } from './components/AIVendorRFPModal';
-import { GuestRSVPModal } from './components/GuestRSVPModal';
 import { ErrorBoundary } from './components/ErrorBoundary';
-import { AICoPilot } from './components/AICoPilot';
+
+// Dynamic code splitting for non-primary views and modals (optimizes initial bundle & execution)
+const BudgetSection = React.lazy(() => import('./components/BudgetSection').then(m => ({ default: m.BudgetSection })));
+const TimelineSection = React.lazy(() => import('./components/TimelineSection').then(m => ({ default: m.TimelineSection })));
+const VendorSection = React.lazy(() => import('./components/VendorSection').then(m => ({ default: m.VendorSection })));
+const GuestSection = React.lazy(() => import('./components/GuestSection').then(m => ({ default: m.GuestSection })));
+const CreativeSection = React.lazy(() => import('./components/CreativeSection').then(m => ({ default: m.CreativeSection })));
+const AIPlannerModal = React.lazy(() => import('./components/AIPlannerModal').then(m => ({ default: m.AIPlannerModal })));
+const AIBudgetOptimizerModal = React.lazy(() => import('./components/AIBudgetOptimizerModal').then(m => ({ default: m.AIBudgetOptimizerModal })));
+const AIVendorRFPModal = React.lazy(() => import('./components/AIVendorRFPModal').then(m => ({ default: m.AIVendorRFPModal })));
+const GuestRSVPModal = React.lazy(() => import('./components/GuestRSVPModal').then(m => ({ default: m.GuestRSVPModal })));
+const AICoPilot = React.lazy(() => import('./components/AICoPilot').then(m => ({ default: m.AICoPilot })));
+
+const SectionLoadingFallback: React.FC = () => (
+  <div className="glass-panel p-12 text-center flex flex-col items-center justify-center space-y-3" role="status" aria-live="polite">
+    <div className="w-8 h-8 border-2 border-indigo-400 border-t-transparent rounded-full animate-spin" />
+    <span className="text-xs font-semibold text-slate-300">Loading celebration workspace...</span>
+  </div>
+);
 
 export default function App() {
   const [events, setEvents] = useState<PlannerEvent[]>(INITIAL_EVENTS);
@@ -75,7 +84,7 @@ export default function App() {
     }
   }, []);
 
-  // Fetch all events on load with safe fallback
+  // Fetch all events on load with safe fallback (single round-trip, zero waterfall)
   useEffect(() => {
     let isCancelled = false;
 
@@ -86,7 +95,7 @@ export default function App() {
         const data = await res.json().catch(() => null);
         if (isCancelled) return;
         if (data && data.success && Array.isArray(data.events) && data.events.length > 0) {
-          fetchActiveEvent(activeEventId);
+          setEvents(data.events);
         }
       } catch {
         // Fallback silently to preloaded mock events in state
@@ -98,7 +107,7 @@ export default function App() {
     return () => {
       isCancelled = true;
     };
-  }, [activeEventId, fetchActiveEvent]);
+  }, []);
 
   // Setup Server-Sent Events (SSE) for real-time collaborative sync with safe reconnection
   useEffect(() => {
@@ -237,35 +246,27 @@ export default function App() {
         Skip to main content
       </a>
 
-      {/* 🌈 Dynamic Organic Rainbow Aura Blobs (Hardware Accelerated) */}
-      <div className="fixed inset-0 pointer-events-none overflow-hidden z-0" aria-hidden="true">
+      {/* 🌈 Dynamic Organic Rainbow Aura Blobs (Hardware Accelerated with CSS Containment) */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden z-0" style={{ contain: 'strict' }} aria-hidden="true">
         {/* Blob 1: Sunset Pink / Magenta */}
         <div 
-          className="absolute -top-32 -left-32 w-[550px] h-[550px] rounded-full bg-[#FF007A]/25 blur-[130px] animate-aura-1 transform-gpu"
+          className="absolute -top-32 -left-32 w-[550px] h-[550px] rounded-full bg-[#FF007A]/18 blur-[120px] animate-aura-1 transform-gpu"
         />
         {/* Blob 2: Cyan / Electric Green */}
         <div 
-          className="absolute top-1/4 right-[-10%] w-[580px] h-[580px] rounded-full bg-[#00F5D4]/20 blur-[150px] animate-aura-2 transform-gpu"
+          className="absolute top-1/4 right-[-10%] w-[580px] h-[580px] rounded-full bg-[#00F5D4]/14 blur-[130px] animate-aura-2 transform-gpu"
         />
         {/* Blob 3: Deep Violet / Indigo */}
         <div 
-          className="absolute top-1/3 left-1/4 w-[650px] h-[650px] rounded-full bg-[#7B2CBF]/30 blur-[160px] animate-aura-3 transform-gpu"
+          className="absolute top-1/3 left-1/4 w-[650px] h-[650px] rounded-full bg-[#7B2CBF]/22 blur-[140px] animate-aura-3 transform-gpu"
         />
         {/* Blob 4: Warm Yellow / Coral */}
         <div 
-          className="absolute -bottom-24 left-[-5%] w-[520px] h-[520px] rounded-full bg-[#FFD200]/20 blur-[140px] animate-aura-2 transform-gpu"
+          className="absolute -bottom-24 left-[-5%] w-[520px] h-[520px] rounded-full bg-[#FFD200]/14 blur-[120px] animate-aura-2 transform-gpu"
         />
         {/* Blob 5: Sky Blue / Cyan */}
         <div 
-          className="absolute bottom-10 right-10 w-[500px] h-[500px] rounded-full bg-[#00B8FF]/20 blur-[130px] animate-aura-1 transform-gpu"
-        />
-
-        {/* Subtle Organic Grain Texture Overlay */}
-        <div 
-          className="absolute inset-0 opacity-[0.025] mix-blend-overlay pointer-events-none bg-repeat"
-          style={{
-            backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")`
-          }}
+          className="absolute bottom-10 right-10 w-[500px] h-[500px] rounded-full bg-[#00B8FF]/14 blur-[120px] animate-aura-1 transform-gpu"
         />
       </div>
 
@@ -367,84 +368,95 @@ export default function App() {
             className="pb-16 outline-none" 
             tabIndex={0}
           >
-          {activeTab === 'overview' && (
-            <OverviewSection
-              event={activeEvent}
-              onNavigateTab={(tab) => setActiveTab(tab as typeof activeTab)}
-              onOpenAIPlanner={handleOpenAIPlanner}
-              onOpenBudgetOptimizer={handleOpenBudgetOptimizer}
-              onOpenRFP={handleOpenRFPModal}
-              onOpenRSVP={handleOpenRSVPModal}
-              onUpdateEvent={handleUpdateEvent}
-            />
-          )}
+            <React.Suspense fallback={<SectionLoadingFallback />}>
+              {activeTab === 'overview' && (
+                <OverviewSection
+                  event={activeEvent}
+                  onNavigateTab={(tab) => setActiveTab(tab as typeof activeTab)}
+                  onOpenAIPlanner={handleOpenAIPlanner}
+                  onOpenBudgetOptimizer={handleOpenBudgetOptimizer}
+                  onOpenRFP={handleOpenRFPModal}
+                  onOpenRSVP={handleOpenRSVPModal}
+                  onUpdateEvent={handleUpdateEvent}
+                />
+              )}
 
-          {activeTab === 'budget' && (
-            <BudgetSection
-              event={activeEvent}
-              onUpdateEvent={handleUpdateEvent}
-            />
-          )}
+              {activeTab === 'budget' && (
+                <BudgetSection
+                  event={activeEvent}
+                  onUpdateEvent={handleUpdateEvent}
+                />
+              )}
 
-          {activeTab === 'timeline' && (
-            <TimelineSection
-              event={activeEvent}
-              onUpdateEvent={handleUpdateEvent}
-            />
-          )}
+              {activeTab === 'timeline' && (
+                <TimelineSection
+                  event={activeEvent}
+                  onUpdateEvent={handleUpdateEvent}
+                />
+              )}
 
-          {activeTab === 'vendors' && (
-            <VendorSection
-              event={activeEvent}
-              onUpdateEvent={handleUpdateEvent}
-            />
-          )}
+              {activeTab === 'vendors' && (
+                <VendorSection
+                  event={activeEvent}
+                  onUpdateEvent={handleUpdateEvent}
+                />
+              )}
 
-          {activeTab === 'guests' && (
-            <GuestSection
-              event={activeEvent}
-              onUpdateEvent={handleUpdateEvent}
-            />
-          )}
+              {activeTab === 'guests' && (
+                <GuestSection
+                  event={activeEvent}
+                  onUpdateEvent={handleUpdateEvent}
+                />
+              )}
 
-          {activeTab === 'creative' && (
-            <CreativeSection
-              event={activeEvent}
-              onUpdateEvent={handleUpdateEvent}
-            />
-          )}
+              {activeTab === 'creative' && (
+                <CreativeSection
+                  event={activeEvent}
+                  onUpdateEvent={handleUpdateEvent}
+                />
+              )}
+            </React.Suspense>
           </div>
         </ErrorBoundary>
       </main>
 
-      {/* Floating Crafty AI Co-Pilot Assistant (Prismatic Iridescent Glass Overlay) */}
-      <AICoPilot event={activeEvent} />
+      {/* Floating Crafty AI Co-Pilot Assistant & Global Modals (Lazy Loaded) */}
+      <React.Suspense fallback={null}>
+        <AICoPilot event={activeEvent} />
 
-      {/* Global Modals */}
-      <AIPlannerModal
-        isOpen={showAIPlanner}
-        onClose={handleCloseAIPlanner}
-        onEventCreated={handleEventCreated}
-      />
+        {showAIPlanner && (
+          <AIPlannerModal
+            isOpen={showAIPlanner}
+            onClose={handleCloseAIPlanner}
+            onEventCreated={handleEventCreated}
+          />
+        )}
 
-      <AIBudgetOptimizerModal
-        isOpen={showBudgetOptimizer}
-        onClose={handleCloseBudgetOptimizer}
-        event={activeEvent}
-      />
+        {showBudgetOptimizer && (
+          <AIBudgetOptimizerModal
+            isOpen={showBudgetOptimizer}
+            onClose={handleCloseBudgetOptimizer}
+            event={activeEvent}
+          />
+        )}
 
-      <AIVendorRFPModal
-        isOpen={showRFPModal}
-        onClose={handleCloseRFPModal}
-        event={activeEvent}
-      />
+        {showRFPModal && (
+          <AIVendorRFPModal
+            isOpen={showRFPModal}
+            onClose={handleCloseRFPModal}
+            event={activeEvent}
+          />
+        )}
 
-      <GuestRSVPModal
-        isOpen={showRSVPModal}
-        onClose={handleCloseRSVPModal}
-        event={activeEvent}
-        onRSVPSubmitted={handleRSVPSubmitted}
-      />
+        {showRSVPModal && (
+          <GuestRSVPModal
+            isOpen={showRSVPModal}
+            onClose={handleCloseRSVPModal}
+            event={activeEvent}
+            onRSVPSubmitted={handleRSVPSubmitted}
+          />
+        )}
+      </React.Suspense>
     </div>
   );
 }

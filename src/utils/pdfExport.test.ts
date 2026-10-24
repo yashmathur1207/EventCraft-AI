@@ -35,7 +35,7 @@ vi.mock('jspdf', () => {
 });
 
 describe('PDF Export Utility', () => {
-  it('generates event summary PDF without throwing errors', () => {
+  it('generates event summary PDF without throwing errors', async () => {
     const mockEvent: PlannerEvent = {
       id: 'test-event-pdf',
       title: 'Golden Sunset Anniversary',
@@ -80,6 +80,6 @@ describe('PDF Export Utility', () => {
       updatedAt: new Date().toISOString()
     };
 
-    expect(() => exportEventSummaryPDF(mockEvent)).not.toThrow();
+    await expect(exportEventSummaryPDF(mockEvent)).resolves.not.toThrow();
   });
 });

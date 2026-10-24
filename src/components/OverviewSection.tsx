@@ -25,6 +25,7 @@ import { ActivityFeed } from './ActivityFeed';
 import { exportEventSummaryPDF } from '../utils/pdfExport';
 import { MilestoneRadialChart } from './MilestoneRadialChart';
 import { MonthViewCalendar } from './MonthViewCalendar';
+import { ArchetypeToolkit } from './ArchetypeToolkit';
 
 interface OverviewSectionProps {
   event: PlannerEvent;
@@ -68,23 +69,15 @@ export const OverviewSection: React.FC<OverviewSectionProps> = React.memo(({
   const [isExporting, setIsExporting] = useState(false);
   const [exportSuccess, setExportSuccess] = useState(false);
 
-  const handleDownloadPDF = () => {
+  const handleDownloadPDF = async () => {
     try {
       setIsExporting(true);
-      // Short delay to ensure browser paints loading state before jsPDF synchronous generation
-      setTimeout(() => {
-        try {
-          exportEventSummaryPDF(event);
-          setIsExporting(false);
-          setExportSuccess(true);
-          setTimeout(() => setExportSuccess(false), 3500);
-        } catch (err) {
-          console.error('Failed to generate PDF summary:', err);
-          setIsExporting(false);
-        }
-      }, 50);
+      await exportEventSummaryPDF(event);
+      setIsExporting(false);
+      setExportSuccess(true);
+      setTimeout(() => setExportSuccess(false), 3500);
     } catch (err) {
-      console.error('PDF generation error:', err);
+      console.error('Failed to generate PDF summary:', err);
       setIsExporting(false);
     }
   };
@@ -162,6 +155,12 @@ export const OverviewSection: React.FC<OverviewSectionProps> = React.memo(({
           </button>
         </div>
       )}
+
+      {/* 🎪 Dedicated Celebration Archetype Logistics & Operations Hub */}
+      <ArchetypeToolkit
+        event={event}
+        onNavigateTab={onNavigateTab}
+      />
 
       {/* 🌈 Prismatic Blueprint & Budget Dials Grid (Inspired by Reference Design) */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

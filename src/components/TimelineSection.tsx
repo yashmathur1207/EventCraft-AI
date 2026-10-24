@@ -3,6 +3,7 @@ import { Clock, Calendar, CheckCircle2, Circle, AlertCircle, Sparkles, Plus, Pri
 import confetti from 'canvas-confetti';
 import { PlannerEvent, Milestone, DayOfScheduleItem } from '../types/event';
 import { formatDate } from '../utils/formatters';
+import { exportEventSummaryPDF } from '../utils/pdfExport';
 import { AITimelineAdjustModal } from './AITimelineAdjustModal';
 import { MonthViewCalendar } from './MonthViewCalendar';
 
@@ -217,11 +218,12 @@ export const TimelineSection: React.FC<TimelineSectionProps> = React.memo(({ eve
             )}
 
             <button
-              onClick={() => window.print()}
+              onClick={() => exportEventSummaryPDF(event).catch(console.error)}
               className="flex items-center gap-2 px-4 py-3 bg-white/10 hover:bg-white/20 border border-white/20 text-white font-semibold text-xs uppercase tracking-wider rounded-2xl backdrop-blur-md transition-all cursor-pointer"
+              title="Download printable PDF of timeline and schedule"
             >
               <Printer className="w-4 h-4" />
-              <span>Print Run-of-Show</span>
+              <span>Export Run-of-Show PDF</span>
             </button>
           </div>
         </div>

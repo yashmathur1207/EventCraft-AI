@@ -266,33 +266,43 @@ export const MilestoneRadialChart: React.FC<MilestoneRadialChartProps> = React.m
         </div>
       </div>
 
-      {/* Radial Interactive Legend */}
-      <div className="flex items-center gap-4 mt-2 text-xs">
-        <div 
+      {/* Radial Interactive Legend with full keyboard accessibility */}
+      <div className="flex items-center gap-4 mt-2 text-xs" role="group" aria-label="Milestone breakdown legend">
+        <button
+          type="button"
+          onClick={() => setHoveredSegment(prev => prev === 'completed' ? null : 'completed')}
           onMouseEnter={() => setHoveredSegment('completed')}
           onMouseLeave={() => setHoveredSegment(null)}
-          className={`flex items-center gap-1.5 transition-all cursor-pointer ${
-            hoveredSegment === 'completed' ? 'scale-105 opacity-100' : 'opacity-85 hover:opacity-100'
+          onFocus={() => setHoveredSegment('completed')}
+          onBlur={() => setHoveredSegment(null)}
+          aria-pressed={hoveredSegment === 'completed'}
+          className={`flex items-center gap-1.5 transition-all cursor-pointer rounded-lg px-2 py-1 focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:outline-hidden ${
+            hoveredSegment === 'completed' ? 'scale-105 opacity-100 bg-white/10' : 'opacity-85 hover:opacity-100'
           }`}
         >
-          <span className="w-2.5 h-2.5 rounded-full bg-gradient-to-r from-[#00F5D4] to-[#10B981] shadow-xs" />
+          <span className="w-2.5 h-2.5 rounded-full bg-gradient-to-r from-[#00F5D4] to-[#10B981] shadow-xs" aria-hidden="true" />
           <span className="text-slate-300 text-[11px] font-medium">
             Completed <strong className="text-white font-bold">({safeCompleted})</strong>
           </span>
-        </div>
+        </button>
 
-        <div 
+        <button
+          type="button"
+          onClick={() => setHoveredSegment(prev => prev === 'pending' ? null : 'pending')}
           onMouseEnter={() => setHoveredSegment('pending')}
           onMouseLeave={() => setHoveredSegment(null)}
-          className={`flex items-center gap-1.5 transition-all cursor-pointer ${
-            hoveredSegment === 'pending' ? 'scale-105 opacity-100' : 'opacity-85 hover:opacity-100'
+          onFocus={() => setHoveredSegment('pending')}
+          onBlur={() => setHoveredSegment(null)}
+          aria-pressed={hoveredSegment === 'pending'}
+          className={`flex items-center gap-1.5 transition-all cursor-pointer rounded-lg px-2 py-1 focus-visible:ring-2 focus-visible:ring-amber-400 focus-visible:outline-hidden ${
+            hoveredSegment === 'pending' ? 'scale-105 opacity-100 bg-white/10' : 'opacity-85 hover:opacity-100'
           }`}
         >
-          <span className="w-2.5 h-2.5 rounded-full bg-gradient-to-r from-[#FF5E3A] to-[#FFD200] shadow-xs" />
+          <span className="w-2.5 h-2.5 rounded-full bg-gradient-to-r from-[#FF5E3A] to-[#FFD200] shadow-xs" aria-hidden="true" />
           <span className="text-slate-300 text-[11px] font-medium">
             Pending <strong className="text-white font-bold">({pendingCount})</strong>
           </span>
-        </div>
+        </button>
       </div>
     </div>
   );
