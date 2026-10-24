@@ -28,6 +28,7 @@ import { AIPlannerModal } from './components/AIPlannerModal';
 import { AIBudgetOptimizerModal } from './components/AIBudgetOptimizerModal';
 import { AIVendorRFPModal } from './components/AIVendorRFPModal';
 import { GuestRSVPModal } from './components/GuestRSVPModal';
+import { ErrorBoundary } from './components/ErrorBoundary';
 import { AICoPilot } from './components/AICoPilot';
 
 export default function App() {
@@ -210,6 +211,14 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-[#0b0914] text-slate-100 flex flex-col relative overflow-x-hidden selection:bg-pink-500 selection:text-white">
+      {/* ♿ Skip to Main Content Link for Keyboard & Screen Reader Accessibility */}
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-indigo-600 focus:text-white focus:rounded-xl focus:shadow-2xl focus:outline-none focus:ring-2 focus:ring-white text-xs font-bold"
+      >
+        Skip to main content
+      </a>
+
       {/* 🌈 Dynamic Organic Rainbow Aura Blobs (Hardware Accelerated) */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden z-0" aria-hidden="true">
         {/* Blob 1: Sunset Pink / Magenta */}
@@ -242,9 +251,13 @@ export default function App() {
         />
       </div>
 
-      {/* 🥳 Floating Refractive Bubble Notification (As specified in Prismatic Glass Design) */}
+      {/* 🥳 Floating Refractive Bubble Notification with aria-live */}
       {liveNotification && (
-        <div className="fixed bottom-24 right-6 z-50 max-w-sm rounded-2xl p-4 glass-panel border border-white/20 shadow-2xl rainbow-glow animate-in fade-in slide-in-from-bottom-5 duration-300">
+        <div 
+          role="status" 
+          aria-live="polite" 
+          className="fixed bottom-24 right-6 z-50 max-w-sm rounded-2xl p-4 glass-panel border border-white/20 shadow-2xl rainbow-glow animate-in fade-in slide-in-from-bottom-5 duration-300"
+        >
           <div className="flex items-start gap-3">
             <div className="p-2.5 rounded-xl bg-gradient-to-br from-pink-500/30 to-amber-500/30 border border-white/20 text-white shrink-0">
               <PartyPopper className="w-5 h-5 text-amber-300 animate-bounce" />
@@ -256,7 +269,7 @@ export default function App() {
                 </span>
                 <button
                   onClick={() => setLiveNotification(null)}
-                  className="p-1 rounded-lg text-slate-400 hover:text-white transition-colors"
+                  className="p-1 rounded-lg text-slate-400 hover:text-white transition-colors cursor-pointer"
                   aria-label="Close notification"
                 >
                   <X className="w-3.5 h-3.5" />
@@ -283,7 +296,7 @@ export default function App() {
       />
 
       {/* Main Container */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 lg:px-8 py-6 md:py-8 space-y-8 relative z-10">
+      <main id="main-content" tabIndex={-1} className="flex-1 max-w-7xl w-full mx-auto px-4 lg:px-8 py-6 md:py-8 space-y-8 relative z-10 focus:outline-none">
         {/* Hero Banner with countdown & circular rainbow readiness gauge */}
         <EventHero
           event={activeEvent}
@@ -293,15 +306,19 @@ export default function App() {
           onOpenRSVP={() => setShowRSVPModal(true)}
         />
 
-        {/* Refractive Navigation Tabs Bar */}
+        {/* Refractive Navigation Tabs Bar with full ARIA support */}
         <div className="glass-panel p-2 overflow-x-auto">
-          <nav className="flex items-center gap-1.5 min-w-max" aria-label="Event Sections">
+          <nav className="flex items-center gap-1.5 min-w-max" aria-label="Event Sections" role="tablist">
             {navTabs.map(tab => {
               const Icon = tab.icon;
               const isActive = activeTab === tab.id;
               return (
                 <button
                   key={tab.id}
+                  id={`tab-${tab.id}`}
+                  role="tab"
+                  aria-selected={isActive}
+                  aria-controls={`panel-${tab.id}`}
                   onClick={() => setActiveTab(tab.id as typeof activeTab)}
                   className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                     isActive
@@ -326,8 +343,15 @@ export default function App() {
           </nav>
         </div>
 
-        {/* Tab Content Panels */}
-        <div className="pb-16">
+        {/* Tab Content Panels wrapped in ErrorBoundary and TabPanel */}
+        <ErrorBoundary fallbackTitle="Event Workspace Error">
+          <div 
+            role="tabpanel" 
+            id={`panel-${activeTab}`} 
+            aria-labelledby={`tab-${activeTab}`} 
+            className="pb-16 outline-none" 
+            tabIndex={0}
+          >
           {activeTab === 'overview' && (
             <OverviewSection
               event={activeEvent}
@@ -374,7 +398,8 @@ export default function App() {
               onUpdateEvent={handleUpdateEvent}
             />
           )}
-        </div>
+          </div>
+        </ErrorBoundary>
       </main>
 
       {/* Floating Crafty AI Co-Pilot Assistant (Prismatic Iridescent Glass Overlay) */}

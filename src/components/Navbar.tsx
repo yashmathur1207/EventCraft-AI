@@ -49,6 +49,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             <select
               value={activeEventId}
               onChange={e => onSelectEvent(e.target.value)}
+              aria-label="Select active event plan"
               className="w-full appearance-none bg-white/5 hover:bg-white/10 text-white font-bold text-xs sm:text-sm pl-9 pr-9 py-2 rounded-2xl border border-white/10 focus:outline-none focus:ring-2 focus:ring-purple-500 cursor-pointer truncate backdrop-blur-md transition-colors"
             >
               {events.map(evt => (

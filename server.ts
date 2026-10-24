@@ -7,6 +7,8 @@ import { GoogleGenAI } from '@google/genai';
 import { INITIAL_EVENTS } from './src/data/mockEvents';
 import { PlannerEvent, ActivityLog } from './src/types/event';
 
+import { sanitizePayload, isValidId } from './src/utils/security';
+
 dotenv.config();
 
 const __filename = fileURLToPath(import.meta.url);
@@ -15,8 +17,63 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const PORT = Number(process.env.PORT) || 3000;
 
-app.use(express.json({ limit: '25mb' }));
-app.use(express.urlencoded({ extended: true, limit: '25mb' }));
+// Security Middleware: Content Security & Transport Protection Headers
+app.use((_req, res, next) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-XSS-Protection', '1; mode=block');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  res.setHeader('X-Frame-Options', 'SAMEORIGIN');
+  next();
+});
+
+// Safe Body Parsing with reasonable size limit (5MB)
+app.use(express.json({ limit: '5mb' }));
+app.use(express.urlencoded({ extended: true, limit: '5mb' }));
+
+// Input Sanitization Middleware: Auto-sanitize request payloads against stored XSS
+app.use((req, _res, next) => {
+  if (req.body && typeof req.body === 'object') {
+    req.body = sanitizePayload(req.body);
+  }
+  next();
+});
+
+// In-Memory Rate Limiting for API Protection against DoS and key exhaustion
+interface RateLimitBucket {
+  count: number;
+  resetTime: number;
+}
+const rateLimitBuckets = new Map<string, RateLimitBucket>();
+
+function createRateLimiter(maxRequests: number, windowMs: number) {
+  return (req: Request, res: Response, next: () => void) => {
+    const ip = req.ip || req.socket.remoteAddress || 'client';
+    const now = Date.now();
+    const bucket = rateLimitBuckets.get(ip);
+
+    if (!bucket || now > bucket.resetTime) {
+      rateLimitBuckets.set(ip, { count: 1, resetTime: now + windowMs });
+      return next();
+    }
+
+    if (bucket.count >= maxRequests) {
+      const retryAfter = Math.ceil((bucket.resetTime - now) / 1000);
+      res.setHeader('Retry-After', retryAfter);
+      return res.status(429).json({
+        success: false,
+        error: 'Too many requests. Please slow down and try again shortly.'
+      });
+    }
+
+    bucket.count++;
+    next();
+  };
+}
+
+const apiRateLimiter = createRateLimiter(200, 60 * 1000); // 200 req/min for general API
+const aiRateLimiter = createRateLimiter(25, 60 * 1000);  // 25 req/min for generative AI
+
+app.use('/api', apiRateLimiter);
 
 // Enable CORS for iframe and preview proxy requests
 app.use((_req, res, next) => {

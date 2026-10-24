@@ -80,14 +80,19 @@ export const MilestoneRadialChart: React.FC<MilestoneRadialChartProps> = ({
       .attr('transform', `translate(${center}, ${center})`);
 
     // 1. Background full circle track
-    const trackArc = d3.arc()
+    const trackArc = d3.arc<d3.DefaultArcObject>()
       .innerRadius(innerRadius)
       .outerRadius(outerRadius)
       .startAngle(0)
       .endAngle(2 * Math.PI);
 
     g.append('path')
-      .attr('d', trackArc as any)
+      .attr('d', trackArc({
+        innerRadius,
+        outerRadius,
+        startAngle: 0,
+        endAngle: 2 * Math.PI
+      }) || '')
       .attr('fill', 'rgba(255, 255, 255, 0.07)')
       .attr('stroke', 'rgba(255, 255, 255, 0.05)')
       .attr('stroke-width', 1);
@@ -115,7 +120,7 @@ export const MilestoneRadialChart: React.FC<MilestoneRadialChartProps> = ({
     const completedEndAngle = completedRatio * 2 * Math.PI;
 
     // Arc Generator
-    const arcGen = d3.arc<any>()
+    const arcGen = d3.arc<d3.DefaultArcObject>()
       .innerRadius(innerRadius)
       .outerRadius(outerRadius)
       .cornerRadius(5)
@@ -138,6 +143,8 @@ export const MilestoneRadialChart: React.FC<MilestoneRadialChartProps> = ({
           const interpolate = d3.interpolate(0, completedEndAngle);
           return (t: number) => {
             return arcGen({
+              innerRadius,
+              outerRadius,
               startAngle: 0,
               endAngle: interpolate(t)
             }) || '';
@@ -163,6 +170,8 @@ export const MilestoneRadialChart: React.FC<MilestoneRadialChartProps> = ({
           const interpolate = d3.interpolate(pendingStartAngle, 2 * Math.PI);
           return (t: number) => {
             return arcGen({
+              innerRadius,
+              outerRadius,
               startAngle: pendingStartAngle,
               endAngle: interpolate(t)
             }) || '';
@@ -201,6 +210,8 @@ export const MilestoneRadialChart: React.FC<MilestoneRadialChartProps> = ({
           width={size}
           height={size}
           className="overflow-visible"
+          role="img"
+          aria-label={`Milestone execution progress gauge: ${safeCompleted} of ${safeTotal} milestones completed, ${targetPct} percent`}
         />
 
         {/* Center Readout HUD */}
