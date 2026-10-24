@@ -1,0 +1,6 @@
+{
+  "name": "EventCraft AI - Intelligent Celebration & Gathering Planner",
+  "description": "GenAI-powered planning assistant for weddings, birthdays, and community events with dynamic budgets, timelines, vendor management, personalized creative ideas, and real-time collaborative guest coordination.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

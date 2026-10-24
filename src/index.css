@@ -1,0 +1,205 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --bg-deep: #0b0914;
+    --text-primary: #ffffff;
+    --text-secondary: #e2e8f0;
+    --text-muted: #94a3b8;
+  }
+
+  body {
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    color: var(--text-secondary);
+    background-color: var(--bg-deep);
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+    min-height: 100vh;
+  }
+
+  h1, h2, h3, h4, .font-serif-luxury {
+    font-family: 'Playfair Display', Georgia, serif;
+    color: var(--text-primary);
+  }
+
+  /* Universal high-accessibility focus indicator */
+  *:focus-visible {
+    outline: 2px solid #a855f7 !important;
+    outline-offset: 3px !important;
+  }
+}
+
+/* 🌈 Refractive Rainbow Glass Components */
+.glass-panel {
+  background: rgba(18, 14, 34, 0.65);
+  backdrop-filter: blur(20px) saturate(150%);
+  -webkit-backdrop-filter: blur(20px) saturate(150%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+  border-left: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow: 
+    0 12px 40px 0 rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  border-radius: 24px;
+}
+
+.glass-panel-subtle {
+  background: rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(16px) saturate(130%);
+  -webkit-backdrop-filter: blur(16px) saturate(130%);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-top: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 
+    0 8px 32px 0 rgba(0, 0, 0, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  border-radius: 20px;
+}
+
+.glass-card-interactive {
+  background: rgba(22, 17, 43, 0.6);
+  backdrop-filter: blur(16px) saturate(140%);
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-top: 1px solid rgba(255, 255, 255, 0.18);
+  border-left: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 
+    0 10px 30px 0 rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.glass-card-interactive:hover {
+  background: rgba(28, 22, 54, 0.75);
+  backdrop-filter: blur(24px) saturate(175%);
+  -webkit-backdrop-filter: blur(24px) saturate(175%);
+  border-color: rgba(255, 255, 255, 0.24);
+  border-top-color: rgba(255, 255, 255, 0.35);
+  box-shadow: 
+    0 18px 45px 0 rgba(0, 0, 0, 0.55),
+    0 0 30px 0 rgba(168, 85, 247, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18);
+  transform: translateY(-2px);
+}
+
+.glass-pill {
+  background: rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(12px) saturate(130%);
+  -webkit-backdrop-filter: blur(12px) saturate(130%);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+}
+
+.glass-input {
+  background: rgba(15, 11, 28, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+  transition: all 0.2s ease;
+}
+
+.glass-input:focus {
+  background: rgba(20, 15, 38, 0.85);
+  border-color: #a855f7;
+  box-shadow: 0 0 15px rgba(168, 85, 247, 0.3);
+  outline: none;
+}
+
+/* 🌈 Rainbow Refractive Borders & Text Gradients */
+.rainbow-gradient-border {
+  position: relative;
+  background: rgba(20, 15, 38, 0.75);
+  backdrop-filter: blur(20px) saturate(150%);
+  border-radius: 22px;
+}
+
+.rainbow-gradient-border::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: 23px;
+  padding: 1px;
+  background: linear-gradient(135deg, #FF007A, #FF5E3A, #FFD200, #00F5D4, #00B8FF, #7B2CBF);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+.rainbow-text {
+  background: linear-gradient(90deg, #FF5E62 0%, #FFD97D 25%, #6EE7B7 50%, #3B82F6 75%, #A78BFA 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.rainbow-bar-bg {
+  background: linear-gradient(90deg, #FF007A 0%, #FF5E3A 20%, #FFD200 40%, #00F5D4 65%, #00B8FF 85%, #7B2CBF 100%);
+}
+
+.rainbow-glow {
+  box-shadow: 0 0 35px -5px rgba(255, 0, 122, 0.3), 0 0 45px -5px rgba(0, 245, 212, 0.25);
+}
+
+/* Live Badge with multi-color pulse */
+.rainbow-live-badge {
+  background: linear-gradient(135deg, rgba(255, 0, 122, 0.8), rgba(123, 44, 191, 0.9));
+  box-shadow: 0 0 15px rgba(255, 0, 122, 0.5);
+  color: #ffffff;
+}
+
+/* Organic Background Rainbow Aura Blobs Animation */
+@keyframes auraFloat1 {
+  0%, 100% { transform: translate(0px, 0px) scale(1); }
+  33% { transform: translate(40px, -50px) scale(1.1); }
+  66% { transform: translate(-30px, 40px) scale(0.95); }
+}
+
+@keyframes auraFloat2 {
+  0%, 100% { transform: translate(0px, 0px) scale(1); }
+  33% { transform: translate(-50px, 30px) scale(1.08); }
+  66% { transform: translate(35px, -45px) scale(0.92); }
+}
+
+@keyframes auraFloat3 {
+  0%, 100% { transform: translate(0px, 0px) scale(1); }
+  50% { transform: translate(50px, 40px) scale(1.15); }
+}
+
+.animate-aura-1 {
+  animation: auraFloat1 22s ease-in-out infinite;
+}
+
+.animate-aura-2 {
+  animation: auraFloat2 26s ease-in-out infinite;
+}
+
+.animate-aura-3 {
+  animation: auraFloat3 30s ease-in-out infinite;
+}
+
+/* Custom Scrollbar for Glass Dark Theme */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: rgba(11, 9, 20, 0.5);
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.35);
+}
+
+/* Reduced Motion Safeguard (WCAG) */
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
