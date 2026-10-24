@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Clock, Calendar, CheckCircle2, Circle, AlertCircle, Sparkles, Plus, Printer, User, MapPin } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { PlannerEvent, Milestone, DayOfScheduleItem } from '../types/event';
@@ -11,7 +11,7 @@ interface TimelineSectionProps {
   onUpdateEvent: (updated: PlannerEvent) => void;
 }
 
-export const TimelineSection: React.FC<TimelineSectionProps> = ({ event, onUpdateEvent }) => {
+export const TimelineSection: React.FC<TimelineSectionProps> = React.memo(({ event, onUpdateEvent }) => {
   const [viewMode, setViewMode] = useState<'milestones' | 'calendar' | 'dayOf'>('milestones');
   const [showAdjustModal, setShowAdjustModal] = useState(false);
 
@@ -169,16 +169,21 @@ export const TimelineSection: React.FC<TimelineSectionProps> = ({ event, onUpdat
     });
   };
 
-  // Group milestones by timePhase
-  const groupedMilestones = event.milestones.reduce((acc, m) => {
-    const key = m.timePhase || 'Upcoming';
-    if (!acc[key]) acc[key] = [];
-    acc[key].push(m);
-    return acc;
-  }, {} as Record<string, Milestone[]>);
+  // Group milestones by timePhase memoized
+  const groupedMilestones = useMemo(() => {
+    return event.milestones.reduce((acc, m) => {
+      const key = m.timePhase || 'Upcoming';
+      if (!acc[key]) acc[key] = [];
+      acc[key].push(m);
+      return acc;
+    }, {} as Record<string, Milestone[]>);
+  }, [event.milestones]);
 
-  const completedCount = event.milestones.filter(m => m.completed).length;
-  const progressPercent = event.milestones.length > 0 ? Math.round((completedCount / event.milestones.length) * 100) : 0;
+  const { completedCount, progressPercent } = useMemo(() => {
+    const completed = event.milestones.filter(m => m.completed).length;
+    const pct = event.milestones.length > 0 ? Math.round((completed / event.milestones.length) * 100) : 0;
+    return { completedCount: completed, progressPercent: pct };
+  }, [event.milestones]);
 
   return (
     <div className="space-y-8">
@@ -585,4 +590,6 @@ export const TimelineSection: React.FC<TimelineSectionProps> = ({ event, onUpdat
       />
     </div>
   );
-};
+});
+
+TimelineSection.displayName = 'TimelineSection';

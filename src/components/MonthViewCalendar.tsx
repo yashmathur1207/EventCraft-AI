@@ -47,7 +47,7 @@ interface DayEventItem {
   rawMilestone?: Milestone;
 }
 
-export const MonthViewCalendar: React.FC<MonthViewCalendarProps> = ({
+export const MonthViewCalendar: React.FC<MonthViewCalendarProps> = React.memo(({
   event,
   onUpdateEvent,
   onNavigateTab,
@@ -837,4 +837,6 @@ export const MonthViewCalendar: React.FC<MonthViewCalendarProps> = ({
       )}
     </div>
   );
-};
+});
+
+MonthViewCalendar.displayName = 'MonthViewCalendar';

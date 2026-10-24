@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { 
   Sparkles, 
   Clock, 
@@ -36,7 +36,7 @@ interface OverviewSectionProps {
   onUpdateEvent?: (updated: PlannerEvent) => void;
 }
 
-export const OverviewSection: React.FC<OverviewSectionProps> = ({
+export const OverviewSection: React.FC<OverviewSectionProps> = React.memo(({
   event,
   onNavigateTab,
   onOpenBudgetOptimizer,
@@ -44,17 +44,26 @@ export const OverviewSection: React.FC<OverviewSectionProps> = ({
   onOpenRSVP,
   onUpdateEvent
 }) => {
-  const totalActual = event.budgetItems.reduce((sum, b) => sum + (b.actualCost || 0), 0);
-  const remaining = event.totalBudget - totalActual;
-  const attendingGuests = event.guests.filter(g => g.rsvpStatus === 'attending');
-  const attendingHeadcount = attendingGuests.reduce((sum, g) => sum + 1 + (g.plusOnes || 0), 0);
+  // Memoized financial and guest aggregations to minimize render overhead
+  const { totalActual, remaining, budgetPct } = useMemo(() => {
+    const actual = event.budgetItems.reduce((sum, b) => sum + (b.actualCost || 0), 0);
+    const rem = event.totalBudget - actual;
+    const pct = Math.min(100, Math.round((actual / (event.totalBudget || 1)) * 100));
+    return { totalActual: actual, remaining: rem, budgetPct: pct };
+  }, [event.budgetItems, event.totalBudget]);
 
-  const completedMilestones = event.milestones.filter(m => m.completed).length;
-  const pendingMilestones = event.milestones.filter(m => !m.completed);
-  const nextMilestone = pendingMilestones[0];
+  const { attendingCount, attendingHeadcount, guestPct } = useMemo(() => {
+    const attending = event.guests.filter(g => g.rsvpStatus === 'attending');
+    const headcount = attending.reduce((sum, g) => sum + 1 + (g.plusOnes || 0), 0);
+    const pct = Math.min(100, Math.round((headcount / (event.targetGuestCount || 1)) * 100));
+    return { attendingCount: attending.length, attendingHeadcount: headcount, guestPct: pct };
+  }, [event.guests, event.targetGuestCount]);
 
-  const budgetPct = Math.min(100, Math.round((totalActual / (event.totalBudget || 1)) * 100));
-  const guestPct = Math.min(100, Math.round((attendingHeadcount / (event.targetGuestCount || 1)) * 100));
+  const { completedMilestones, pendingMilestones, nextMilestone } = useMemo(() => {
+    const completed = event.milestones.filter(m => m.completed).length;
+    const pending = event.milestones.filter(m => !m.completed);
+    return { completedMilestones: completed, pendingMilestones: pending, nextMilestone: pending[0] };
+  }, [event.milestones]);
 
   const [isExporting, setIsExporting] = useState(false);
   const [exportSuccess, setExportSuccess] = useState(false);
@@ -696,4 +705,6 @@ export const OverviewSection: React.FC<OverviewSectionProps> = ({
       </div>
     </div>
   );
-};
+});
+
+OverviewSection.displayName = 'OverviewSection';

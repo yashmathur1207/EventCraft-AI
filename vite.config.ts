@@ -1,7 +1,10 @@
 import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
-import {defineConfig} from 'vite';
+import { fileURLToPath } from 'url';
+import { defineConfig } from 'vite';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig(() => {
   return {
@@ -9,6 +12,23 @@ export default defineConfig(() => {
     resolve: {
       alias: {
         '@': path.resolve(__dirname, '.'),
+      },
+    },
+    build: {
+      chunkSizeWarningLimit: 800,
+      rollupOptions: {
+        output: {
+          manualChunks(id) {
+            if (id.includes('node_modules')) {
+              if (id.includes('jspdf')) return 'vendor-jspdf';
+              if (id.includes('d3')) return 'vendor-d3';
+              if (id.includes('lucide-react')) return 'vendor-icons';
+              if (id.includes('motion')) return 'vendor-motion';
+              if (id.includes('react') || id.includes('scheduler')) return 'vendor-react';
+              return 'vendor-libs';
+            }
+          },
+        },
       },
     },
     server: {
@@ -20,3 +40,4 @@ export default defineConfig(() => {
     },
   };
 });
+

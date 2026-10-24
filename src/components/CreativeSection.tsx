@@ -7,7 +7,7 @@ interface CreativeSectionProps {
   onUpdateEvent: (updated: PlannerEvent) => void;
 }
 
-export const CreativeSection: React.FC<CreativeSectionProps> = ({ event, onUpdateEvent }) => {
+export const CreativeSection: React.FC<CreativeSectionProps> = React.memo(({ event, onUpdateEvent }) => {
   const [activeTab, setActiveTab] = useState<'palette' | 'cocktails' | 'speeches' | 'invitations' | 'favors'>('palette');
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -440,4 +440,6 @@ export const CreativeSection: React.FC<CreativeSectionProps> = ({ event, onUpdat
       )}
     </div>
   );
-};
+});
+
+CreativeSection.displayName = 'CreativeSection';

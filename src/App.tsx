@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { 
   Sparkles, 
   LayoutDashboard, 
@@ -45,6 +45,36 @@ export default function App() {
   const [showRFPModal, setShowRFPModal] = useState(false);
   const [showRSVPModal, setShowRSVPModal] = useState(false);
 
+  // Modal Openers with useCallback for reference stability
+  const handleOpenAIPlanner = useCallback(() => setShowAIPlanner(true), []);
+  const handleCloseAIPlanner = useCallback(() => setShowAIPlanner(false), []);
+  const handleOpenBudgetOptimizer = useCallback(() => setShowBudgetOptimizer(true), []);
+  const handleCloseBudgetOptimizer = useCallback(() => setShowBudgetOptimizer(false), []);
+  const handleOpenRFPModal = useCallback(() => setShowRFPModal(true), []);
+  const handleCloseRFPModal = useCallback(() => setShowRFPModal(false), []);
+  const handleOpenRSVPModal = useCallback(() => setShowRSVPModal(true), []);
+  const handleCloseRSVPModal = useCallback(() => setShowRSVPModal(false), []);
+  const handleDismissNotification = useCallback(() => setLiveNotification(null), []);
+
+  const fetchActiveEvent = useCallback(async (id: string) => {
+    try {
+      const res = await fetch(`/api/events/${id}`);
+      if (!res.ok) return;
+      const data = await res.json().catch(() => null);
+      if (data && data.success && data.event) {
+        setEvents(prev => {
+          const exists = prev.find(e => e.id === id);
+          if (exists) {
+            return prev.map(e => e.id === id ? data.event : e);
+          }
+          return [data.event, ...prev];
+        });
+      }
+    } catch {
+      // Retain existing event in state
+    }
+  }, []);
+
   // Fetch all events on load with safe fallback
   useEffect(() => {
     let isCancelled = false;
@@ -68,26 +98,7 @@ export default function App() {
     return () => {
       isCancelled = true;
     };
-  }, []);
-
-  const fetchActiveEvent = async (id: string) => {
-    try {
-      const res = await fetch(`/api/events/${id}`);
-      if (!res.ok) return;
-      const data = await res.json().catch(() => null);
-      if (data && data.success && data.event) {
-        setEvents(prev => {
-          const exists = prev.find(e => e.id === id);
-          if (exists) {
-            return prev.map(e => e.id === id ? data.event : e);
-          }
-          return [data.event, ...prev];
-        });
-      }
-    } catch {
-      // Retain existing event in state
-    }
-  };
+  }, [activeEventId, fetchActiveEvent]);
 
   // Setup Server-Sent Events (SSE) for real-time collaborative sync with safe reconnection
   useEffect(() => {
@@ -159,9 +170,16 @@ export default function App() {
     };
   }, [activeEventId]);
 
-  const activeEvent = events.find(e => e.id === activeEventId) || events[0];
+  const activeEvent = useMemo(() => {
+    return events.find(e => e.id === activeEventId) || events[0];
+  }, [events, activeEventId]);
 
-  const handleUpdateEvent = async (updated: PlannerEvent) => {
+  const handleSelectEvent = useCallback((id: string) => {
+    setActiveEventId(id);
+    fetchActiveEvent(id);
+  }, [fetchActiveEvent]);
+
+  const handleUpdateEvent = useCallback(async (updated: PlannerEvent) => {
     setEvents(prev => prev.map(e => e.id === updated.id ? updated : e));
     try {
       await fetch(`/api/events/${updated.id}`, {
@@ -172,9 +190,9 @@ export default function App() {
     } catch {
       // Optimistic update retained
     }
-  };
+  }, []);
 
-  const handleEventCreated = (newEvent: PlannerEvent) => {
+  const handleEventCreated = useCallback((newEvent: PlannerEvent) => {
     setEvents(prev => [newEvent, ...prev]);
     setActiveEventId(newEvent.id);
     setActiveTab('overview');
@@ -183,15 +201,15 @@ export default function App() {
       message: `"${newEvent.title}" was generated with custom budget and schedule!`
     });
     setTimeout(() => setLiveNotification(null), 5000);
-  };
+  }, []);
 
-  const handleRSVPSubmitted = (guest: Guest) => {
+  const handleRSVPSubmitted = useCallback((guest: Guest) => {
     setLiveNotification({
       title: 'RSVP Confirmed',
       message: `${guest.name} confirmed attendance with ${guest.plusOnes > 0 ? `+${guest.plusOnes} guest` : 'solo'}!`
     });
     setTimeout(() => setLiveNotification(null), 5000);
-  };
+  }, []);
 
   interface NavTabItem {
     id: 'overview' | 'budget' | 'timeline' | 'vendors' | 'guests' | 'creative';
@@ -200,14 +218,14 @@ export default function App() {
     badge?: string;
   }
 
-  const navTabs: NavTabItem[] = [
+  const navTabs: NavTabItem[] = useMemo(() => [
     { id: 'overview', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'budget', label: 'Budget Dial & Ledger', icon: DollarSign, badge: `$${(activeEvent.totalBudget / 1000).toFixed(0)}k` },
     { id: 'timeline', label: 'Timeline & Run-of-Show', icon: Clock, badge: `${activeEvent.milestones.filter(m => m.completed).length}/${activeEvent.milestones.length}` },
     { id: 'vendors', label: 'Vendors & RFPs', icon: ShieldCheck, badge: `${activeEvent.vendors.length}` },
     { id: 'guests', label: 'Guest Coordination', icon: Users, badge: `${activeEvent.guests.filter(g => g.rsvpStatus === 'attending').length}` },
     { id: 'creative', label: 'Inspirations Studio', icon: Palette }
-  ];
+  ], [activeEvent]);
 
   return (
     <div className="min-h-screen bg-[#0b0914] text-slate-100 flex flex-col relative overflow-x-hidden selection:bg-pink-500 selection:text-white">
@@ -268,7 +286,7 @@ export default function App() {
                   {liveNotification.title}
                 </span>
                 <button
-                  onClick={() => setLiveNotification(null)}
+                  onClick={handleDismissNotification}
                   className="p-1 rounded-lg text-slate-400 hover:text-white transition-colors cursor-pointer"
                   aria-label="Close notification"
                 >
@@ -287,11 +305,8 @@ export default function App() {
       <Navbar
         events={events}
         activeEventId={activeEventId}
-        onSelectEvent={(id) => {
-          setActiveEventId(id);
-          fetchActiveEvent(id);
-        }}
-        onOpenAIPlanner={() => setShowAIPlanner(true)}
+        onSelectEvent={handleSelectEvent}
+        onOpenAIPlanner={handleOpenAIPlanner}
         isConnected={isConnected}
       />
 
@@ -302,8 +317,8 @@ export default function App() {
           event={activeEvent}
           currentRole={currentRole}
           onRoleChange={setCurrentRole}
-          onOpenAIPlanner={() => setShowAIPlanner(true)}
-          onOpenRSVP={() => setShowRSVPModal(true)}
+          onOpenAIPlanner={handleOpenAIPlanner}
+          onOpenRSVP={handleOpenRSVPModal}
         />
 
         {/* Refractive Navigation Tabs Bar with full ARIA support */}
@@ -356,10 +371,10 @@ export default function App() {
             <OverviewSection
               event={activeEvent}
               onNavigateTab={(tab) => setActiveTab(tab as typeof activeTab)}
-              onOpenAIPlanner={() => setShowAIPlanner(true)}
-              onOpenBudgetOptimizer={() => setShowBudgetOptimizer(true)}
-              onOpenRFP={() => setShowRFPModal(true)}
-              onOpenRSVP={() => setShowRSVPModal(true)}
+              onOpenAIPlanner={handleOpenAIPlanner}
+              onOpenBudgetOptimizer={handleOpenBudgetOptimizer}
+              onOpenRFP={handleOpenRFPModal}
+              onOpenRSVP={handleOpenRSVPModal}
               onUpdateEvent={handleUpdateEvent}
             />
           )}
@@ -408,25 +423,25 @@ export default function App() {
       {/* Global Modals */}
       <AIPlannerModal
         isOpen={showAIPlanner}
-        onClose={() => setShowAIPlanner(false)}
+        onClose={handleCloseAIPlanner}
         onEventCreated={handleEventCreated}
       />
 
       <AIBudgetOptimizerModal
         isOpen={showBudgetOptimizer}
-        onClose={() => setShowBudgetOptimizer(false)}
+        onClose={handleCloseBudgetOptimizer}
         event={activeEvent}
       />
 
       <AIVendorRFPModal
         isOpen={showRFPModal}
-        onClose={() => setShowRFPModal(false)}
+        onClose={handleCloseRFPModal}
         event={activeEvent}
       />
 
       <GuestRSVPModal
         isOpen={showRSVPModal}
-        onClose={() => setShowRSVPModal(false)}
+        onClose={handleCloseRSVPModal}
         event={activeEvent}
         onRSVPSubmitted={handleRSVPSubmitted}
       />

@@ -9,7 +9,7 @@ interface MilestoneRadialChartProps {
   className?: string;
 }
 
-export const MilestoneRadialChart: React.FC<MilestoneRadialChartProps> = ({
+export const MilestoneRadialChart: React.FC<MilestoneRadialChartProps> = React.memo(({
   completedCount,
   totalCount,
   size = 180,
@@ -183,6 +183,7 @@ export const MilestoneRadialChart: React.FC<MilestoneRadialChartProps> = ({
     const startVal = 0;
     const startTime = performance.now();
     const duration = 1200;
+    let rafId: number | null = null;
 
     const animateCounter = (now: number) => {
       const elapsed = now - startTime;
@@ -192,12 +193,21 @@ export const MilestoneRadialChart: React.FC<MilestoneRadialChartProps> = ({
       setDisplayPct(Math.round(startVal + (targetPct - startVal) * eased));
 
       if (progress < 1) {
-        requestAnimationFrame(animateCounter);
+        rafId = requestAnimationFrame(animateCounter);
       }
     };
 
-    requestAnimationFrame(animateCounter);
+    rafId = requestAnimationFrame(animateCounter);
 
+    // Resource & Memory Optimization: Cancel pending animation frames and D3 transitions
+    return () => {
+      if (rafId !== null) {
+        cancelAnimationFrame(rafId);
+      }
+      if (svgRef.current) {
+        d3.select(svgRef.current).selectAll('*').interrupt();
+      }
+    };
   }, [safeCompleted, safeTotal, targetPct, pendingCount, strokeWidth]);
 
   return (
@@ -286,4 +296,6 @@ export const MilestoneRadialChart: React.FC<MilestoneRadialChartProps> = ({
       </div>
     </div>
   );
-};
+});
+
+MilestoneRadialChart.displayName = 'MilestoneRadialChart';

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Users, Heart, Utensils, Music, Check, Clock, XCircle, Plus, Search, Filter, Share2, Sparkles, UserCheck, Camera } from 'lucide-react';
 import { PlannerEvent, Guest } from '../types/event';
 import { GuestRSVPModal } from './GuestRSVPModal';
@@ -9,7 +9,7 @@ interface GuestSectionProps {
   onUpdateEvent: (updated: PlannerEvent) => void;
 }
 
-export const GuestSection: React.FC<GuestSectionProps> = ({ event, onUpdateEvent }) => {
+export const GuestSection: React.FC<GuestSectionProps> = React.memo(({ event, onUpdateEvent }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedGroup, setSelectedGroup] = useState<string>('all');
   const [showRsvpModal, setShowRsvpModal] = useState(false);
@@ -26,28 +26,38 @@ export const GuestSection: React.FC<GuestSectionProps> = ({ event, onUpdateEvent
   const [gPlusOnes, setGPlusOnes] = useState(0);
   const [gTable, setGTable] = useState('');
 
-  // Stats
-  const attendingGuests = event.guests.filter(g => g.rsvpStatus === 'attending');
-  const declinedGuests = event.guests.filter(g => g.rsvpStatus === 'declined');
-  const pendingGuests = event.guests.filter(g => g.rsvpStatus === 'pending');
-  
-  // Total headcount including plus-ones
-  const totalAttendingHeadcount = attendingGuests.reduce((sum, g) => sum + 1 + (g.plusOnes || 0), 0);
+  // Stats memoized for performance
+  const { attendingGuests, declinedGuests, pendingGuests, totalAttendingHeadcount, dietaryTallies } = useMemo(() => {
+    const attending = event.guests.filter(g => g.rsvpStatus === 'attending');
+    const declined = event.guests.filter(g => g.rsvpStatus === 'declined');
+    const pending = event.guests.filter(g => g.rsvpStatus === 'pending');
+    const headcount = attending.reduce((sum, g) => sum + 1 + (g.plusOnes || 0), 0);
+    const tallies = attending.reduce((acc, g) => {
+      const key = g.dietary && g.dietary !== 'None' ? g.dietary : 'Standard Menu';
+      acc[key] = (acc[key] || 0) + 1 + (g.plusOnes || 0);
+      return acc;
+    }, {} as Record<string, number>);
 
-  // Dietary tallies
-  const dietaryTallies = attendingGuests.reduce((acc, g) => {
-    const key = g.dietary && g.dietary !== 'None' ? g.dietary : 'Standard Menu';
-    acc[key] = (acc[key] || 0) + 1 + (g.plusOnes || 0);
-    return acc;
-  }, {} as Record<string, number>);
+    return {
+      attendingGuests: attending,
+      declinedGuests: declined,
+      pendingGuests: pending,
+      totalAttendingHeadcount: headcount,
+      dietaryTallies: tallies
+    };
+  }, [event.guests]);
 
-  const filteredGuests = event.guests.filter(g => {
-    const matchesSearch = g.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (g.email && g.email.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (g.notes && g.notes.toLowerCase().includes(searchTerm.toLowerCase()));
-    const matchesGroup = selectedGroup === 'all' || g.group === selectedGroup;
-    return matchesSearch && matchesGroup;
-  });
+  const filteredGuests = useMemo(() => {
+    const query = searchTerm.toLowerCase().trim();
+    return event.guests.filter(g => {
+      const matchesSearch = !query ||
+        g.name.toLowerCase().includes(query) ||
+        (g.email && g.email.toLowerCase().includes(query)) ||
+        (g.notes && g.notes.toLowerCase().includes(query));
+      const matchesGroup = selectedGroup === 'all' || g.group === selectedGroup;
+      return matchesSearch && matchesGroup;
+    });
+  }, [event.guests, searchTerm, selectedGroup]);
 
   const toggleCheckIn = (guestId: string) => {
     const updated = event.guests.map(g => {
@@ -505,4 +515,6 @@ export const GuestSection: React.FC<GuestSectionProps> = ({ event, onUpdateEvent
       />
     </div>
   );
-};
+});
+
+GuestSection.displayName = 'GuestSection';

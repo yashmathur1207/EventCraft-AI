@@ -51,7 +51,7 @@ const getCategoryIcon = (catName: string) => {
   return Tag;
 };
 
-export const VendorSection: React.FC<VendorSectionProps> = ({ event, onUpdateEvent }) => {
+export const VendorSection: React.FC<VendorSectionProps> = React.memo(({ event, onUpdateEvent }) => {
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [selectedStatus, setSelectedStatus] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
@@ -649,4 +649,6 @@ export const VendorSection: React.FC<VendorSectionProps> = ({ event, onUpdateEve
       )}
     </div>
   );
-};
+});
+
+VendorSection.displayName = 'VendorSection';

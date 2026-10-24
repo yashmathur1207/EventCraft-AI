@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Sparkles, Plus, Check, Clock, Trash2, ArrowUpRight, DollarSign, PieChart, ShieldCheck, TrendingUp, AlertTriangle } from 'lucide-react';
 import { PlannerEvent, BudgetItem, BudgetCategory } from '../types/event';
 import { formatCurrency } from '../utils/formatters';
@@ -9,7 +9,7 @@ interface BudgetSectionProps {
   onUpdateEvent: (updated: PlannerEvent) => void;
 }
 
-export const BudgetSection: React.FC<BudgetSectionProps> = ({ event, onUpdateEvent }) => {
+export const BudgetSection: React.FC<BudgetSectionProps> = React.memo(({ event, onUpdateEvent }) => {
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [showOptimizer, setShowOptimizer] = useState(false);
   const [isAddingItem, setIsAddingItem] = useState(false);
@@ -19,18 +19,30 @@ export const BudgetSection: React.FC<BudgetSectionProps> = ({ event, onUpdateEve
   const [newActual, setNewActual] = useState<number | ''>('');
   const [newDueDate, setNewDueDate] = useState('');
 
-  // Calculations
-  const totalAllocated = event.budgetCategories.reduce((sum, c) => sum + (c.allocated || 0), 0);
-  const totalActual = event.budgetItems.reduce((sum, b) => sum + (b.actualCost || 0), 0);
-  const totalEstimated = event.budgetItems.reduce((sum, b) => sum + (b.estimatedCost || 0), 0);
-  const remainingBudget = event.totalBudget - totalActual;
-  const paidItems = event.budgetItems.filter(b => b.isPaid);
-  const totalPaid = paidItems.reduce((sum, b) => sum + (b.actualCost || b.estimatedCost || 0), 0);
+  // Calculations memoized for maximum performance on state/input changes
+  const { totalAllocated, totalActual, totalEstimated, remainingBudget, paidItems, totalPaid } = useMemo(() => {
+    const allocated = event.budgetCategories.reduce((sum, c) => sum + (c.allocated || 0), 0);
+    const actual = event.budgetItems.reduce((sum, b) => sum + (b.actualCost || 0), 0);
+    const estimated = event.budgetItems.reduce((sum, b) => sum + (b.estimatedCost || 0), 0);
+    const rem = event.totalBudget - actual;
+    const paid = event.budgetItems.filter(b => b.isPaid);
+    const paidSum = paid.reduce((sum, b) => sum + (b.actualCost || b.estimatedCost || 0), 0);
+    return {
+      totalAllocated: allocated,
+      totalActual: actual,
+      totalEstimated: estimated,
+      remainingBudget: rem,
+      paidItems: paid,
+      totalPaid: paidSum
+    };
+  }, [event.budgetCategories, event.budgetItems, event.totalBudget]);
 
-  const filteredItems = event.budgetItems.filter(item => {
-    if (selectedCategory === 'all') return true;
-    return item.categoryId === selectedCategory;
-  });
+  const filteredItems = useMemo(() => {
+    return event.budgetItems.filter(item => {
+      if (selectedCategory === 'all') return true;
+      return item.categoryId === selectedCategory;
+    });
+  }, [event.budgetItems, selectedCategory]);
 
   const handleTogglePaid = (itemId: string) => {
     const updatedItems = event.budgetItems.map(item => {
@@ -476,4 +488,6 @@ export const BudgetSection: React.FC<BudgetSectionProps> = ({ event, onUpdateEve
       )}
     </div>
   );
-};
+});
+
+BudgetSection.displayName = 'BudgetSection';
